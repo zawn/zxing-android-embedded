@@ -35,6 +35,30 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
     }
+    // 定义APK的签名信息.
+    signingConfigs {
+        alpha {
+            storeFile file("$rootDir/house365.keystore")
+            storePassword "House365"
+            keyAlias "house365debugkey"
+            keyPassword "House365"
+        }
+        release {
+            storeFile file("$rootDir/house365.keystore")
+            storePassword "House365"
+            // 应该在真正Release的时候更换Alias
+            keyAlias "house365debugkey"
+            keyPassword "House365"
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
 }
 
 
