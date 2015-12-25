@@ -1,59 +1,42 @@
 buildscript {
-  repositories {
-    jcenter()
-  }
-  dependencies {
-    classpath 'com.android.tools.build:gradle:1.5.0'
-    classpath 'com.jakewharton.sdkmanager:gradle-plugin:0.12.0'
-    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.0'
-  }
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.0'
+        classpath 'com.netflix.nebula:gradle-info-plugin:2.2.4'
+    }
 }
 
 // Projects to be published to bintray
 def PUBLISH_PROJECTS = ['zxing-android-embedded']
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream()) // local.properties 有 sdk 的绝对位置
 
 subprojects {
     repositories {
+        // Android SDK内置repo
+        maven {
+            url properties.getProperty("sdk.dir") + "/extras/android/m2repository"
+        }
+        // 本地内部repo
+        maven {
+            url project.getRootDir().getPath() + "/repo"
+        }
+        // House365内部Maven Repo
+        maven {
+            url "http://192.168.108.60/nexus/content/groups/public/"
+        }
         jcenter()
+
     }
 
     version = '3.0.3'
     group = 'com.journeyapps'
-    apply plugin: 'android-sdk-manager'
 
-    ext.androidBuildTools ='23.0.2'
+    ext.androidBuildTools = '23.0.2'
     ext.androidTargetSdk = 21
     ext.zxingCore = 'com.google.zxing:core:3.2.0'
 
-    if (PUBLISH_PROJECTS.contains(project.name)) {
-        apply plugin: 'maven-publish'
-        apply plugin: 'com.jfrog.bintray'
-
-        project.ext.artifactId = project.name // Default to subproject name
-
-
-        afterEvaluate {
-
-            task sourceJar(type: Jar) {
-                classifier = 'sources'
-                from android.sourceSets.main.java.srcDirs
-            }
-            // To release, place bintray_user and bintray_key properties in ~/.gradle/gradle.properties,
-            // and run ./gradlew clean assembleRelease bintrayUpload
-            
-            if(project.hasProperty('bintray_user') && project.hasProperty('bintray_key')) {
-                bintray {
-                    user = bintray_user
-                    key = bintray_key
-                    publications = ['maven']
-                    publish = true
-                    pkg {
-                        userOrg = 'journeyapps'
-                        repo = 'maven'
-                        name = 'zxing-android-embedded'
-                    }
-                }
-            }
-        }
-    }
 }
